@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SwiftRide — Super Admin</title>
+<style>
+:root{
+  --bg:#0A0E1A;--sidebar:#0D1220;--card:#141828;--surface:#1C2236;--border:#252B3E;
+  --gold:#D4A017;--gold-dim:rgba(212,160,23,.12);--text:#EEEEF5;--muted:#8B91A8;
+  --green:#1D9E75;--blue:#3B5FD4;--purple:#7F77DD;--red:#D85A30;--yellow:#E8C04A;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',-apple-system,sans-serif;}
+body{background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:245px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+.sb-head{padding:20px 20px 14px;border-bottom:1px solid var(--border);}
+.sb-badge{display:inline-block;background:var(--gold-dim);color:var(--gold);font-size:9px;font-weight:800;letter-spacing:1.5px;padding:2px 8px;border-radius:5px;margin-bottom:6px;}
+.sb-head h2{font-size:18px;font-weight:800;}
+.sb-head p{font-size:11px;color:var(--muted);}
+.sb-user{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.sb-user-info strong{font-size:13px;display:block;}
+.sb-user-info small{font-size:11px;color:var(--muted);}
+.nav{flex:1;padding:8px;}
+.nav-sec{font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--muted);padding:12px 12px 4px;text-transform:uppercase;}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer;font-size:13px;color:var(--muted);margin-bottom:1px;transition:all .15s;position:relative;}
+.ni:hover{background:rgba(255,255,255,.04);color:var(--text);}
+.ni.active{background:var(--gold-dim);color:var(--gold);font-weight:600;}
+.ni svg{width:18px;height:18px;flex-shrink:0;}
+.ni .badge-dot{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;}
+.sb-bottom{padding:12px;border-top:1px solid var(--border);}
+.logout{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer;font-size:13px;color:var(--red);transition:background .15s;}
+.logout:hover{background:rgba(216,90,48,.08);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOPBAR */
+.topbar{height:58px;background:var(--sidebar);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:14px;flex-shrink:0;}
+.topbar-badge{background:var(--gold-dim);color:var(--gold);font-size:9px;font-weight:800;letter-spacing:1px;padding:3px 9px;border-radius:6px;}
+.topbar h1{font-size:17px;font-weight:700;flex:1;}
+.search-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 14px 7px 36px;color:var(--text);font-size:13px;width:230px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238B91A8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center;}
+.search-box::placeholder{color:var(--muted);}
+.icon-btn{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .15s;position:relative;}
+.icon-btn:hover{border-color:var(--gold);color:var(--gold);}
+.icon-btn .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--sidebar);}
+
+/* CONTENT */
+.content{flex:1;overflow:hidden;}
+.tab-panel{display:none;height:100%;overflow-y:auto;padding:24px;}
+.tab-panel.active{display:block;}
+
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.kpi:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.kpi-ico{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;}
+.kpi-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.kpi-val{font-size:30px;font-weight:800;line-height:1;margin-bottom:4px;}
+.kpi-label{font-size:12px;color:var(--muted);}
+.kpi-sub{font-size:11px;margin-top:6px;font-weight:500;}
+
+/* SECTION */
+.sec{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sec-title{font-size:15px;font-weight:700;}
+.sec-action{font-size:12px;color:var(--gold);cursor:pointer;text-decoration:none;}
+.sec-action:hover{text-decoration:underline;}
+
+/* TABLES */
+.tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:22px;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;font-weight:600;color:var(--muted);text-align:left;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface);text-transform:uppercase;letter-spacing:.6px;}
+td{padding:13px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tbody tr{cursor:pointer;transition:background .12s;}
+tbody tr:hover td{background:rgba(255,255,255,.025);}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.b-green{background:rgba(29,158,117,.12);color:var(--green);}
+.b-blue{background:rgba(59,95,212,.12);color:var(--blue);}
+.b-red{background:rgba(216,90,48,.12);color:var(--red);}
+.b-yellow{background:rgba(232,192,74,.12);color:var(--yellow);}
+.b-grey{background:rgba(139,145,168,.12);color:var(--muted);}
+.b-gold{background:var(--gold-dim);color:var(--gold);}
+.b-purple{background:rgba(127,119,221,.12);color:var(--purple);}
+
+/* BUTTONS */
+.btn{border:none;border-radius:9px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;}
+.btn:hover{opacity:.85;}
+.btn-blue{background:rgba(59,95,212,.15);color:var(--blue);border:1px solid rgba(59,95,212,.3);}
+.btn-green{background:rgba(29,158,117,.15);color:var(--green);border:1px solid rgba(29,158,117,.3);}
+.btn-red{background:rgba(216,90,48,.15);color:var(--red);border:1px solid rgba(216,90,48,.3);}
+.btn-gold{background:var(--gold);color:#000;border:none;padding:8px 18px;font-size:13px;border-radius:10px;}
+.btn-surface{background:var(--surface);color:var(--text);border:1px solid var(--border);}
+
+/* USER CELL */
+.user-cell{display:flex;align-items:center;gap:10px;}
+.user-cell .u-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;}
+
+/* ACTIVITY FEED */
+.feed{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.feed-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+.feed-item:last-child{border-bottom:none;}
+.feed-item:hover{background:var(--surface);}
+.feed-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+.feed-text strong{font-size:13px;display:block;}
+.feed-text small{font-size:11px;color:var(--muted);}
+.feed-time{margin-left:auto;font-size:10px;color:var(--muted);white-space:nowrap;}
+
+/* ATTENTION CARDS */
+.attn{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;margin-bottom:8px;}
+.attn:hover{border-color:var(--gold);background:rgba(212,160,23,.04);}
+.attn-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;}
+.attn-info strong{font-size:13px;display:block;}
+.attn-info small{font-size:11px;color:var(--muted);}
+.attn-arrow{margin-left:auto;color:var(--muted);font-size:18px;}
+
+/* DASH GRID */
+.dash-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;}
+
+/* CHARTS */
+.chart-container{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.chart-title{font-size:14px;font-weight:700;}
+.chart-tabs{display:flex;gap:4px;}
+.chart-tab{padding:5px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .15s;}
+.chart-tab.active{background:var(--gold-dim);color:var(--gold);}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:140px;padding-top:10px;}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px;}
+.bar{width:100%;border-radius:6px 6px 0 0;transition:opacity .15s;cursor:pointer;position:relative;}
+.bar:hover{opacity:.8;}
+.bar-lbl{font-size:9px;color:var(--muted);}
+.bar-val{font-size:9px;color:var(--muted);position:absolute;top:-16px;left:50%;transform:translateX(-50%);white-space:nowrap;}
+.donut-wrap{display:flex;align-items:center;gap:24px;}
+.donut-legend{display:flex;flex-direction:column;gap:8px;}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;}
+.legend-dot{width:10px;height:10px;border-radius:50%;}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px;}
+.stat-mini{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s;}
+.stat-mini:hover{border-color:var(--gold);}
+.stat-mini .val{font-size:20px;font-weight:800;}
+.stat-mini .lbl{font-size:11px;color:var(--muted);margin-top:2px;}
+.stat-mini .chg{font-size:10px;margin-top:4px;}
+
+/* NOTIFICATIONS */
+.notif-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:all .15s;}
+.notif-item:hover{border-color:var(--gold);}
+.notif-item.unread{border-left:3px solid var(--gold);}
+.notif-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.notif-body strong{font-size:13px;display:block;margin-bottom:2px;}
+.notif-body p{font-size:12px;color:var(--muted);line-height:1.4;}
+.notif-time{margin-left:auto;font-size:10px;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+
+/* SETTINGS */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.settings-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;}
+.settings-card h4{font-size:14px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.field input,.field select,.field textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;font-size:13px;outline:none;transition:border-color .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);}
+.field select option{background:var(--card);}
+.field textarea{resize:vertical;min-height:80px;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-info strong{font-size:13px;display:block;}
+.toggle-info small{font-size:11px;color:var(--muted);}
+.toggle{width:42px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--gold);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;}
+.toggle.on::after{transform:translateX(18px);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.modal-ov.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px;width:500px;max-height:85vh;overflow-y:auto;animation:slideUp .2s ease;}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0;}
+.modal-head h3{font-size:17px;font-weight:800;}
+.modal-close{cursor:pointer;color:var(--muted);font-size:22px;line-height:1;transition:color .15s;}
+.modal-close:hover{color:var(--text);}
+.modal-body{padding:20px 24px 24px;}
+.modal-stat-row{display:flex;gap:10px;margin-bottom:16px;}
+.modal-stat{flex:1;background:var(--surface);border-radius:10px;padding:12px;text-align:center;}
+.modal-stat strong{display:block;font-size:18px;font-weight:800;}
+.modal-stat small{font-size:10px;color:var(--muted);}
+.modal-row{display:flex;gap:8px;font-size:13px;padding:9px 0;border-bottom:1px solid var(--border);}
+.modal-row:last-child{border-bottom:none;}
+.modal-row .lbl{color:var(--muted);width:120px;flex-shrink:0;}
+.modal-row .val{font-weight:500;}
+.modal-actions{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;}
+.modal-actions button{padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:opacity .15s;}
+.modal-actions button:hover{opacity:.85;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 20px;font-size:13px;font-weight:600;display:none;align-items:center;gap:10px;z-index:2000;animation:fadeIn .2s ease;}
+.toast.show{display:flex;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* PROGRESS BARS */
+.prog-wrap{margin-bottom:10px;}
+.prog-header{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;}
+.prog-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+
+/* AVATAR COLORS */
+.av-gold{background:rgba(212,160,23,.15);color:var(--gold);}
+.av-blue{background:rgba(59,95,212,.15);color:var(--blue);}
+.av-green{background:rgba(29,158,117,.15);color:var(--green);}
+.av-red{background:rgba(216,90,48,.15);color:var(--red);}
+.av-purple{background:rgba(127,119,221,.15);color:var(--purple);}
+.av-grey{background:rgba(139,145,168,.15);color:var(--muted);}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-head">
+    <div class="sb-badge">SUPER ADMIN</div>
+    <h2>SwiftRide</h2>
+    <p>Admin Control Panel</p>
+  </div>
+  <div class="sb-user">
+    <div class="av av-gold" style="width:40px;height:40px;font-size:14px">SA</div>
+    <div class="sb-user-info">
+      <strong>Super Admin</strong>
+      <small>admin@swiftride.rw</small>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-sec">Main</div>
+    <div class="ni active" onclick="showTab('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="ni" onclick="showTab('users',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Users <span class="badge-dot">6</span>
+    </div>
+    <div class="ni" onclick="showTab('companies',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Companies <span class="badge-dot" style="background:var(--yellow)">1</span>
+    </div>
+    <div class="ni" onclick="showTab('bookings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Bookings
+    </div>
+    <div class="nav-sec">System</div>
+    <div class="ni" onclick="showTab('analytics',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </div>
+    <div class="ni" onclick="showTab('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+      System Settings
+    </div>
+    <div class="ni" onclick="showTab('notifications',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Notifications <span class="badge-dot">3</span>
+    </div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="logout" onclick="showToast('Signed out successfully','var(--red)')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-badge">SUPER</div>
+    <h1>SwiftRide Admin</h1>
+    <input class="search-box" placeholder="Search users, bookings…" oninput="globalSearch(this.value)">
+    <div class="icon-btn" onclick="showTab('notifications',document.querySelector('.ni:nth-child(8)'))">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="notif-dot"></div>
+    </div>
+    <div class="icon-btn" onclick="showTab('settings',document.querySelector('.ni:nth-child(7)'))">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/></svg>
+    </div>
+    <div class="av av-gold" style="width:34px;height:34px;cursor:pointer" onclick="openModal('profile')">SA</div>
+  </div>
+
+  <div class="content">
+
+  <!-- ══════════ DASHBOARD ══════════ -->
+  <div class="tab-panel active" id="tab-dashboard">
+    <div class="kpi-grid">
+      <div class="kpi" onclick="showTab('users',document.querySelectorAll('.ni')[1])">
+        <div class="kpi-top">
+          <div class="kpi-ico" style="background:rgba(59,95,212,.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <span class="badge b-blue kpi-badge">↑ 12%</span>
+        </div>
+        <div class="kpi-val">6</div>
+        <div class="kpi-label">Total Users</div>
+        <div class="kpi-sub" style="color:var(--green)">4 active · 1 suspended · 1 inactive</div>
+      </div>
+      <div class="kpi" onclick="showTab('companies',document.querySelectorAll('.ni')[2])">
+        <div class="kpi-top">
+          <div class="kpi-ico" style="background:rgba(127,119,221,.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          </div>
+          <span class="badge b-yellow kpi-badge">1 pending</span>
+        </div>
+        <div class="kpi-val">5</div>
+        <div class="kpi-label">Companies</div>
+        <div class="kpi-sub" style="color:var(--yellow)">3 active · 1 pending · 1 suspended</div>
+      </div>
+      <div class="kpi" onclick="showTab('bookings',document.querySelectorAll('.ni')[3])">
+        <div class="kpi-top">
+          <div class="kpi-ico" style="background:rgba(29,158,117,.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          </div>
+          <span class="badge b-green kpi-badge">2 active</span>
+        </div>
+        <div class="kpi-val">6</div>
+        <div class="kpi-label">Bookings</div>
+        <div class="kpi-sub" style="color:var(--green)">2 live · 1 upcoming · 2 completed · 1 cancelled</div>
+      </div>
+      <div class="kpi" onclick="showTab('analytics',document.querySelectorAll('.ni')[4])">
+        <div class="kpi-top">
+          <div class="kpi-ico" style="background:var(--gold-dim)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <span class="badge b-gold kpi-badge">↑ 24%</span>
+        </div>
+        <div class="kpi-val" style="color:var(--gold)">$901</div>
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-sub" style="color:var(--gold)">$150 avg · 83% completion rate</div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div>
+        <div class="sec"><span class="sec-title">Recent Activity</span><a class="sec-action" onclick="showTab('bookings',document.querySelectorAll('.ni')[3])">View all →</a></div>
+        <div class="feed">
+          <div class="feed-item" onclick="openModal('activity','New user registered','Alice Mugisha joined SwiftRide','2 min ago','Alice Mugisha has completed registration and email verification. Account is active and ready to use.','user')">
+            <div class="feed-ico" style="background:rgba(59,95,212,.1)">👤</div>
+            <div class="feed-text"><strong>New user registered</strong><small>Alice Mugisha joined SwiftRide</small></div>
+            <span class="feed-time">2 min ago</span>
+          </div>
+          <div class="feed-item" onclick="openModal('activity','Booking confirmed','SW240005 · $200 · Fiona Ingabire','15 min ago','Booking SW240005 confirmed for Fiona Ingabire. Vehicle: Mercedes GLE from LuxDrive. Pickup: Jun 8 – Jun 10. Total: $200.','booking')">
+            <div class="feed-ico" style="background:rgba(29,158,117,.1)">📋</div>
+            <div class="feed-text"><strong>Booking confirmed</strong><small>SW240005 · $200 · Fiona Ingabire</small></div>
+            <span class="feed-time">15 min ago</span>
+          </div>
+          <div class="feed-item" onclick="openModal('activity','Company pending approval','RwandaRide submitted documents','1 hr ago','RwandaRide has submitted all required documents for company approval. Fleet: 5 vehicles. Location: KN 5 Rd, Nyamirambo. Rating: 4.5★ from 21 bookings.','company')">
+            <div class="feed-ico" style="background:rgba(232,192,74,.1)">🏢</div>
+            <div class="feed-text"><strong>Company pending approval</strong><small>RwandaRide submitted documents</small></div>
+            <span class="feed-time">1 hr ago</span>
+          </div>
+          <div class="feed-item" onclick="openModal('activity','Booking cancelled','SW240004 by Bob Nkusi','2 hr ago','Booking SW240004 was cancelled by Bob Nkusi. Vehicle: Toyota Camry from DriveKigali. Pickup was Mar 5 – Mar 7. Amount: $90. Reason: Customer request.','cancel')">
+            <div class="feed-ico" style="background:rgba(216,90,48,.1)">❌</div>
+            <div class="feed-text"><strong>Booking cancelled</strong><small>SW240004 by Bob Nkusi</small></div>
+            <span class="feed-time">2 hr ago</span>
+          </div>
+          <div class="feed-item" onclick="openModal('activity','5★ review posted','DriveKigali · Cameron One','3 hr ago','Cameron One left a 5-star review for DriveKigali: "Excellent service! Car was spotless and pickup was smooth. Highly recommend." This brings DriveKigali rating to 4.9★.','review')">
+            <div class="feed-ico" style="background:var(--gold-dim)">⭐</div>
+            <div class="feed-text"><strong>5★ review posted</strong><small>DriveKigali · Cameron One</small></div>
+            <span class="feed-time">3 hr ago</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="sec"><span class="sec-title">⚠ Needs Attention</span></div>
+        <div class="attn" onclick="showTab('companies',document.querySelectorAll('.ni')[2]);setTimeout(()=>openCompanyModal('RwandaRide','KN 5 Rd, Nyamirambo',2,5,21,2400,'Pending',4.5),200)">
+          <div class="attn-ico" style="background:rgba(232,192,74,.1)">⏳</div>
+          <div class="attn-info"><strong>RwandaRide approval pending</strong><small>1 company awaiting review · Submitted 1hr ago</small></div>
+          <div class="attn-arrow">›</div>
+        </div>
+        <div class="attn" onclick="showTab('users',document.querySelectorAll('.ni')[1]);setTimeout(()=>openUserModal('Bob Nkusi','bob@email.com','+250 788 333 444','Suspended',2,120,'Jun 2024'),200)">
+          <div class="attn-ico" style="background:rgba(216,90,48,.1)">🚫</div>
+          <div class="attn-info"><strong>Bob Nkusi account suspended</strong><small>Review suspension reason · Suspended 5 days ago</small></div>
+          <div class="attn-arrow">›</div>
+        </div>
+        <div class="attn" onclick="showTab('notifications',document.querySelectorAll('.ni')[6])">
+          <div class="attn-ico" style="background:rgba(59,95,212,.1)">🎧</div>
+          <div class="attn-info"><strong>3 support tickets open</strong><small>Respond to user queries · Oldest: 2 days ago</small></div>
+          <div class="attn-arrow">›</div>
+        </div>
+
+        <div class="sec" style="margin-top:20px"><span class="sec-title">Top Companies</span><a class="sec-action" onclick="showTab('companies',document.querySelectorAll('.ni')[2])">View all →</a></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Company</th><th>Revenue</th><th>Rating</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr onclick="openCompanyModal('DriveKigali','KG 7 Ave, Kigali',4,28,156,18200,'Active',4.9)"><td><strong>DriveKigali</strong></td><td style="color:var(--gold)">$18,200</td><td>4.9★</td><td><span class="badge b-green">Active</span></td></tr>
+              <tr onclick="openCompanyModal('SafariWheels','KN 3 Rd, Remera',3,12,89,11400,'Active',4.8)"><td><strong>SafariWheels</strong></td><td style="color:var(--gold)">$11,400</td><td>4.8★</td><td><span class="badge b-green">Active</span></td></tr>
+              <tr onclick="openCompanyModal('LuxDrive','KG 11 Ave, Nyarutarama',6,8,44,9800,'Active',4.7)"><td><strong>LuxDrive</strong></td><td style="color:var(--gold)">$9,800</td><td>4.7★</td><td><span class="badge b-green">Active</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ USERS ══════════ -->
+  <div class="tab-panel" id="tab-users">
+    <div class="sec">
+      <span class="sec-title">All Users (6)</span>
+      <button class="btn btn-gold" onclick="openModal('addUser')">+ Add User</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>User</th><th>Phone</th><th>Trips</th><th>Spent</th><th>Member Since</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr onclick="openUserModal('Cameron One','C1@gmail.com','+250 788 000 001','Active',12,1240,'Jan 2024')">
+            <td><div class="user-cell"><div class="u-av av-gold">CO</div><div><strong>Cameron One</strong><br><small style="color:var(--muted)">C1@gmail.com</small><br><span class="badge b-gold" style="font-size:8px;margin-top:3px">SUPER ADMIN</span></div></div></td>
+            <td>+250 788 000 001</td><td>12</td><td style="color:var(--gold)">$1,240</td><td>Jan 2024</td>
+            <td><span class="badge b-green">Active</span></td>
+            <td onclick="event.stopPropagation()"><button class="btn btn-blue" onclick="openUserModal('Cameron One','C1@gmail.com','+250 788 000 001','Active',12,1240,'Jan 2024')">View</button></td>
+          </tr>
+          <tr onclick="openUserModal('Alice Mugisha','alice@email.com','+250 788 111 222','Active',8,890,'Mar 2024')">
+            <td><div class="user-cell"><div class="u-av av-blue">AM</div><div><strong>Alice Mugisha</strong><br><small style="color:var(--muted)">alice@email.com</small></div></div></td>
+            <td>+250 788 111 222</td><td>8</td><td style="color:var(--gold)">$890</td><td>Mar 2024</td>
+            <td><span class="badge b-green">Active</span></td>
+            <td onclick="event.stopPropagation()"><button class="btn btn-blue" onclick="openUserModal('Alice Mugisha','alice@email.com','+250 788 111 222','Active',8,890,'Mar 2024')">View</button></td>
+          </tr>
+          <tr onclick="openUserModal('Bob Nkusi','bob@email.com','+250 788 333 444','Suspended',2,120,'Jun 2024')">
+            <td><div class="user-cell"><div class="u-av av-red">BN</div><div><strong>Bob Nkusi</strong><br><small style="color:var(--muted)">bob@email.com</small></div></div></td>
+            <td>+250 788 333 444</td><td>2</td><td style="color:var(--gold)">$120</td><td>Jun 2024</td>
+            <td><span class="badge b-red">Suspended</span></td>
+            <td onclick="event.stopPropagation()"><button class="btn btn-green" onclick="showToast('Bob Nkusi unsuspended ✓','var(--green)')">Unsuspend</button></td>
+          </tr>
+          <tr onclick="openUserModal('Diana Uwase','diana@email.com','+250 788 555 666','Active',21,3200,'Nov 2023')">
+            <td><div class="user-cell"><div class="u-av av-purple">DU</div><div><strong>Diana Uwase</strong><br><small style="color:var(--muted)">diana@email.com</small></div></div></td>
+            <td>+250 788 555 666</td><td>21</td><td style="color:var(--gold)">$3,200</td><td>Nov 2023</td>
+            <td><span class="badge b-green">Active</span></td>
+            <td onclick="event.stopPropagation()"><button class="btn btn-blue" onclick="openUserModal('Diana Uwase','diana@email.com','+250 788 555 666','Active',21,3200,'Nov 2023')">View</button></td>
+          </tr>
+          <tr onclick="openUserModal('Eric Habimana','eric@email.com','+250 788 777 888','Inactive',0,0,'Sep 2024')">
+            <td><div class="user-cell"><div class="u-av av-grey">EH</div><div><strong>Eric Habimana</strong><br><small style="color:var(--muted)">eric@email.com</small></div></div></td>
+            <td>+250 788 777 888</td><td>0</td><td style="color:var(--gold)">$0</td><td>Sep 2024</td>
+            <td><span class="badge b-grey">Inactive</span></td>
+            <td onclick="event.stopPropagation()"><button class="btn btn-blue" onclick="openUserModal('Eric Habimana','eric@email.com','+250 788 777 888','Inactive',0,0,'Sep 2024')">View</button></td>
+          </tr>
+          <tr onclick="openUserModal('Fiona Ingabire','fiona@email.com','+250 788 999 000','Active',5,670,'Feb 2024')">
+            <td><div class="user-cell"><div class="u-av av-green">FI</div><div><strong>Fiona Ingabire</strong><br><small style="color:var(--muted)">fiona@email.com</small></div></div></td>
+            <td>+250 788 999 000</td><td>5</td><td style="color:var(--gold)">$670</td><td>Feb 2024</td>
+            <td><span class="badge b-green">Active</span></td>
+            <td onclick="event.stopPropagation()"><button class="btn btn-blue" onclick="openUserModal('Fiona Ingabire','fiona@email.com','+250 788 999 000','Active',5,670,'Feb 2024')">View</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════ COMPANIES ══════════ -->
+  <div class="tab-panel" id="tab-companies">
+    <div class="sec">
+      <span class="sec-title">All Companies (5)</span>
+      <button class="btn btn-gold" onclick="openModal('addCompany')">+ Add Company</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Company</th><th>Location</th><th>Agents</th><th>Cars</th><th>Bookings</th><th>Revenue</th><th>Rating</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr onclick="openCompanyModal('DriveKigali','KG 7 Ave, Kigali',4,28,156,18200,'Active',4.9)"><td><strong>DriveKigali</strong></td><td style="color:var(--muted)">KG 7 Ave, Kigali</td><td>4</td><td>28</td><td>156</td><td style="color:var(--gold)">$18,200</td><td>4.9★</td><td><span class="badge b-green">Active</span></td><td onclick="event.stopPropagation()"><button class="btn btn-blue" onclick="openCompanyModal('DriveKigali','KG 7 Ave, Kigali',4,28,156,18200,'Active',4.9)">Manage</button></td></tr>
+          <tr onclick="openCompanyModal('SafariWheels','KN 3 Rd, Remera',3,12,89,11400,'Active',4.8)"><td><strong>SafariWheels</strong></td><td style="color:var(--muted)">KN 3 Rd, Remera</td><td>3</td><td>12</td><td>89</td><td style="color:var(--gold)">$11,400</td><td>4.8★</td><td><span class="badge b-green">Active</span></td><td onclick="event.stopPropagation()"><button class="btn btn-blue" onclick="openCompanyModal('SafariWheels','KN 3 Rd, Remera',3,12,89,11400,'Active',4.8)">Manage</button></td></tr>
+          <tr onclick="openCompanyModal('LuxDrive','KG 11 Ave, Nyarutarama',6,8,44,9800,'Active',4.7)"><td><strong>LuxDrive</strong></td><td style="color:var(--muted)">KG 11 Ave, Nyarutarama</td><td>6</td><td>8</td><td>44</td><td style="color:var(--gold)">$9,800</td><td>4.7★</td><td><span class="badge b-green">Active</span></td><td onclick="event.stopPropagation()"><button class="btn btn-blue" onclick="openCompanyModal('LuxDrive','KG 11 Ave, Nyarutarama',6,8,44,9800,'Active',4.7)">Manage</button></td></tr>
+          <tr onclick="openCompanyModal('RwandaRide','KN 5 Rd, Nyamirambo',2,5,21,2400,'Pending',4.5)" style="border-left:3px solid var(--yellow)"><td><strong>RwandaRide</strong></td><td style="color:var(--muted)">KN 5 Rd, Nyamirambo</td><td>2</td><td>5</td><td>21</td><td style="color:var(--gold)">$2,400</td><td>4.5★</td><td><span class="badge b-yellow">Pending</span></td>
+            <td onclick="event.stopPropagation()" style="display:flex;gap:6px;padding:13px 16px">
+              <button class="btn btn-green" onclick="showToast('RwandaRide approved ✓','var(--green)')">Approve</button>
+              <button class="btn btn-red" onclick="showToast('RwandaRide rejected','var(--red)')">Reject</button>
+            </td>
+          </tr>
+          <tr onclick="openCompanyModal('VanGo','KG 9 Ave, Gisozi',1,6,12,1100,'Suspended',3.9)"><td><strong>VanGo</strong></td><td style="color:var(--muted)">KG 9 Ave, Gisozi</td><td>1</td><td>6</td><td>12</td><td style="color:var(--gold)">$1,100</td><td>3.9★</td><td><span class="badge b-red">Suspended</span></td><td onclick="event.stopPropagation()"><button class="btn btn-green" onclick="showToast('VanGo unsuspended ✓','var(--green)')">Unsuspend</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════ BOOKINGS ══════════ -->
+  <div class="tab-panel" id="tab-bookings">
+    <div class="sec">
+      <span class="sec-title">All Bookings (6)</span>
+      <select id="statusFilter" onchange="filterBookings()" style="background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:7px 14px;font-size:12px;outline:none">
+        <option>All Status</option><option>Active</option><option>Upcoming</option><option>Completed</option><option>Cancelled</option>
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ref</th><th>User</th><th>Car</th><th>Company</th><th>Pick-up</th><th>Drop-off</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody id="bookings-body">
+          <tr data-status="Active" onclick="openBookingModal('SW240001','Cameron One','Toyota RAV4','DriveKigali','May 24','May 27',135,'Active')"><td style="color:var(--gold);font-weight:700">SW240001</td><td>Cameron One</td><td>Toyota RAV4</td><td>DriveKigali</td><td>May 24</td><td>May 27</td><td style="color:var(--gold)">$135</td><td><span class="badge b-green">Active</span></td></tr>
+          <tr data-status="Upcoming" onclick="openBookingModal('SW240002','Diana Uwase','BMW 5 Series','SafariWheels','Jun 1','Jun 3',180,'Upcoming')"><td style="color:var(--gold);font-weight:700">SW240002</td><td>Diana Uwase</td><td>BMW 5 Series</td><td>SafariWheels</td><td>Jun 1</td><td>Jun 3</td><td style="color:var(--gold)">$180</td><td><span class="badge b-blue">Upcoming</span></td></tr>
+          <tr data-status="Completed" onclick="openBookingModal('SW240003','Alice Mugisha','Range Rover','LuxDrive','Apr 10','Apr 12',220,'Completed')"><td style="color:var(--gold);font-weight:700">SW240003</td><td>Alice Mugisha</td><td>Range Rover</td><td>LuxDrive</td><td>Apr 10</td><td>Apr 12</td><td style="color:var(--gold)">$220</td><td><span class="badge b-grey">Completed</span></td></tr>
+          <tr data-status="Cancelled" onclick="openBookingModal('SW240004','Bob Nkusi','Toyota Camry','DriveKigali','Mar 5','Mar 7',90,'Cancelled')"><td style="color:var(--gold);font-weight:700">SW240004</td><td>Bob Nkusi</td><td>Toyota Camry</td><td>DriveKigali</td><td>Mar 5</td><td>Mar 7</td><td style="color:var(--gold)">$90</td><td><span class="badge b-red">Cancelled</span></td></tr>
+          <tr data-status="Active" onclick="openBookingModal('SW240005','Fiona Ingabire','Mercedes GLE','LuxDrive','Jun 8','Jun 10',200,'Active')"><td style="color:var(--gold);font-weight:700">SW240005</td><td>Fiona Ingabire</td><td>Mercedes GLE</td><td>LuxDrive</td><td>Jun 8</td><td>Jun 10</td><td style="color:var(--gold)">$200</td><td><span class="badge b-green">Active</span></td></tr>
+          <tr data-status="Completed" onclick="openBookingModal('SW240006','Eric Habimana','Honda CR-V','RwandaRide','May 1','May 3',76,'Completed')"><td style="color:var(--gold);font-weight:700">SW240006</td><td>Eric Habimana</td><td>Honda CR-V</td><td>RwandaRide</td><td>May 1</td><td>May 3</td><td style="color:var(--gold)">$76</td><td><span class="badge b-grey">Completed</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════ ANALYTICS ══════════ -->
+  <div class="tab-panel" id="tab-analytics">
+    <div class="sec"><span class="sec-title">Analytics Overview</span>
+      <div style="display:flex;gap:8px">
+        <div class="chart-tab active" onclick="switchPeriod(this,'7d')">7 days</div>
+        <div class="chart-tab" onclick="switchPeriod(this,'30d')">30 days</div>
+        <div class="chart-tab" onclick="switchPeriod(this,'90d')">90 days</div>
+      </div>
+    </div>
+
+    <div class="kpi-grid" style="margin-bottom:20px">
+      <div class="kpi" style="cursor:default">
+        <div class="kpi-top"><div class="kpi-ico" style="background:var(--gold-dim)">💰</div><span class="badge b-gold kpi-badge">↑ 24%</span></div>
+        <div class="kpi-val" style="color:var(--gold)">$901</div>
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-sub" style="color:var(--gold)">vs $726 last period</div>
+      </div>
+      <div class="kpi" style="cursor:default">
+        <div class="kpi-top"><div class="kpi-ico" style="background:rgba(29,158,117,.1)">✅</div><span class="badge b-green kpi-badge">↑ 5%</span></div>
+        <div class="kpi-val">83%</div>
+        <div class="kpi-label">Booking Completion Rate</div>
+        <div class="kpi-sub" style="color:var(--green)">5 completed · 1 cancelled</div>
+      </div>
+      <div class="kpi" style="cursor:default">
+        <div class="kpi-top"><div class="kpi-ico" style="background:var(--gold-dim)">⭐</div><span class="badge b-gold kpi-badge">Stable</span></div>
+        <div class="kpi-val">4.8★</div>
+        <div class="kpi-label">Avg Platform Rating</div>
+        <div class="kpi-sub" style="color:var(--gold)">Based on 652 reviews</div>
+      </div>
+      <div class="kpi" style="cursor:default">
+        <div class="kpi-top"><div class="kpi-ico" style="background:rgba(59,95,212,.1)">📊</div><span class="badge b-blue kpi-badge">↑ 12%</span></div>
+        <div class="kpi-val">$150</div>
+        <div class="kpi-label">Avg Booking Value</div>
+        <div class="kpi-sub" style="color:var(--blue)">vs $134 last period</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:20px;margin-bottom:20px">
+      <div class="chart-container">
+        <div class="chart-header"><span class="chart-title">Revenue by Month</span></div>
+        <div class="bar-chart" id="revenue-chart"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--muted);padding:0 4px" id="revenue-labels"></div>
+      </div>
+      <div class="chart-container">
+        <div class="chart-header"><span class="chart-title">Bookings by Status</span></div>
+        <div class="donut-wrap" style="margin-top:8px">
+          <svg width="130" height="130" viewBox="0 0 130 130">
+            <circle cx="65" cy="65" r="50" fill="none" stroke="var(--border)" stroke-width="22"/>
+            <circle cx="65" cy="65" r="50" fill="none" stroke="var(--green)" stroke-width="22" stroke-dasharray="52 262" stroke-dashoffset="0" transform="rotate(-90 65 65)"/>
+            <circle cx="65" cy="65" r="50" fill="none" stroke="var(--blue)" stroke-width="22" stroke-dasharray="26 262" stroke-dashoffset="-52" transform="rotate(-90 65 65)"/>
+            <circle cx="65" cy="65" r="50" fill="none" stroke="var(--muted)" stroke-width="22" stroke-dasharray="52 262" stroke-dashoffset="-78" transform="rotate(-90 65 65)"/>
+            <circle cx="65" cy="65" r="50" fill="none" stroke="var(--red)" stroke-width="22" stroke-dasharray="26 262" stroke-dashoffset="-130" transform="rotate(-90 65 65)"/>
+            <text x="65" y="62" text-anchor="middle" fill="var(--text)" font-size="18" font-weight="800">6</text>
+            <text x="65" y="76" text-anchor="middle" fill="var(--muted)" font-size="10">bookings</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Active (2) – 33%</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Upcoming (1) – 17%</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--muted)"></div>Completed (2) – 33%</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Cancelled (1) – 17%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="chart-container">
+        <div class="chart-header"><span class="chart-title">Company Performance</span></div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
+          <div class="prog-wrap"><div class="prog-header"><span>DriveKigali</span><span style="color:var(--gold)">$18,200</span></div><div class="prog-track"><div class="prog-fill" style="width:100%;background:var(--green)"></div></div></div>
+          <div class="prog-wrap"><div class="prog-header"><span>SafariWheels</span><span style="color:var(--gold)">$11,400</span></div><div class="prog-track"><div class="prog-fill" style="width:63%;background:var(--blue)"></div></div></div>
+          <div class="prog-wrap"><div class="prog-header"><span>LuxDrive</span><span style="color:var(--gold)">$9,800</span></div><div class="prog-track"><div class="prog-fill" style="width:54%;background:var(--purple)"></div></div></div>
+          <div class="prog-wrap"><div class="prog-header"><span>RwandaRide</span><span style="color:var(--gold)">$2,400</span></div><div class="prog-track"><div class="prog-fill" style="width:13%;background:var(--yellow)"></div></div></div>
+          <div class="prog-wrap"><div class="prog-header"><span>VanGo</span><span style="color:var(--gold)">$1,100</span></div><div class="prog-track"><div class="prog-fill" style="width:6%;background:var(--red)"></div></div></div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <div class="chart-header"><span class="chart-title">User Growth</span></div>
+        <div class="bar-chart" id="user-chart" style="height:120px"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--muted);padding:0 4px" id="user-labels"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SYSTEM SETTINGS ══════════ -->
+  <div class="tab-panel" id="tab-settings">
+    <div class="sec"><span class="sec-title">System Settings</span><button class="btn btn-gold" onclick="showToast('Settings saved ✓','var(--green)')">Save All Changes</button></div>
+    <div class="settings-grid">
+      <div>
+        <div class="settings-card">
+          <h4>🏢 Platform Info</h4>
+          <div class="field"><label>Platform Name</label><input value="SwiftRide"/></div>
+          <div class="field"><label>Support Email</label><input value="support@swiftride.rw"/></div>
+          <div class="field-row">
+            <div class="field"><label>Support Phone</label><input value="+250 788 000 100"/></div>
+            <div class="field"><label>Country</label><select><option selected>Rwanda</option><option>Uganda</option><option>Kenya</option></select></div>
+          </div>
+          <div class="field"><label>Platform Description</label><textarea>Rwanda's leading car rental platform connecting customers with trusted rental companies.</textarea></div>
+        </div>
+        <div class="settings-card">
+          <h4>💰 Financial Settings</h4>
+          <div class="field-row">
+            <div class="field"><label>Default Currency</label><select><option selected>USD</option><option>RWF</option><option>EUR</option></select></div>
+            <div class="field"><label>Service Fee %</label><input value="8" type="number"/></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Min Booking Amount</label><input value="30" type="number"/></div>
+            <div class="field"><label>Max Booking Days</label><input value="365" type="number"/></div>
+          </div>
+          <div class="field"><label>Cancellation Policy</label><select><option selected>Free up to 24hrs</option><option>Free up to 48hrs</option><option>No free cancellation</option></select></div>
+        </div>
+        <div class="settings-card">
+          <h4>🔐 Security Settings</h4>
+          <div class="toggle-row"><div class="toggle-info"><strong>Two-Factor Authentication</strong><small>Require 2FA for all admin logins</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>Session Timeout</strong><small>Auto-logout after 30 minutes of inactivity</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>IP Whitelist</strong><small>Restrict admin access to specific IPs</small></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          <div class="field" style="margin-top:12px"><label>Max Login Attempts</label><input value="5" type="number"/></div>
+        </div>
+      </div>
+      <div>
+        <div class="settings-card">
+          <h4>🔔 Notification Settings</h4>
+          <div class="toggle-row"><div class="toggle-info"><strong>Email Notifications</strong><small>Send email alerts for bookings and users</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>SMS Notifications</strong><small>Send SMS for critical events</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>New User Alerts</strong><small>Notify when new users register</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>Booking Alerts</strong><small>Notify on booking status changes</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>Company Approval Alerts</strong><small>Notify when companies need review</small></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>Suspension Alerts</strong><small>Notify on account suspensions</small></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="settings-card">
+          <h4>🌐 Regional Settings</h4>
+          <div class="field-row">
+            <div class="field"><label>Default Language</label><select><option selected>English</option><option>French</option><option>Kinyarwanda</option></select></div>
+            <div class="field"><label>Timezone</label><select><option selected>Africa/Kigali (UTC+2)</option><option>UTC</option></select></div>
+          </div>
+          <div class="field"><label>Date Format</label><select><option selected>DD MMM YYYY</option><option>MM/DD/YYYY</option><option>YYYY-MM-DD</option></select></div>
+          <div class="field"><label>Distance Unit</label><select><option selected>km</option><option>miles</option></select></div>
+        </div>
+        <div class="settings-card">
+          <h4>⚠ Danger Zone</h4>
+          <div style="background:rgba(216,90,48,.06);border:1px solid rgba(216,90,48,.2);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px">
+            <button onclick="showToast('Maintenance mode enabled','var(--yellow)')" style="background:rgba(232,192,74,.12);color:var(--yellow);border:1px solid rgba(232,192,74,.3);border-radius:9px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;text-align:left">⚠ Enable Maintenance Mode</button>
+            <button onclick="showToast('Cache cleared ✓','var(--green)')" style="background:rgba(59,95,212,.12);color:var(--blue);border:1px solid rgba(59,95,212,.3);border-radius:9px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;text-align:left">🔄 Clear System Cache</button>
+            <button onclick="showToast('Backup started…','var(--gold)')" style="background:rgba(29,158,117,.12);color:var(--green);border:1px solid rgba(29,158,117,.3);border-radius:9px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;text-align:left">💾 Export Data Backup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ NOTIFICATIONS ══════════ -->
+  <div class="tab-panel" id="tab-notifications">
+    <div class="sec">
+      <span class="sec-title">Notifications (3 unread)</span>
+      <button class="btn btn-surface" onclick="showToast('All notifications marked as read ✓','var(--green)')">Mark all read</button>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <div class="chart-tab active" onclick="filterNotifs('all',this)">All (8)</div>
+      <div class="chart-tab" onclick="filterNotifs('unread',this)">Unread (3)</div>
+      <div class="chart-tab" onclick="filterNotifs('booking',this)">Bookings</div>
+      <div class="chart-tab" onclick="filterNotifs('company',this)">Companies</div>
+      <div class="chart-tab" onclick="filterNotifs('user',this)">Users</div>
+    </div>
+
+    <div id="notif-list">
+      <div class="notif-item unread" data-type="company" onclick="openModal('notifDetail','RwandaRide Approval Pending','Company','RwandaRide has submitted all required documents and is awaiting your approval. They have 5 vehicles, 2 agents, and 21 previous bookings. Location: KN 5 Rd, Nyamirambo. Action required: Review and approve or reject.')">
+        <div class="notif-dot" style="background:var(--yellow)"></div>
+        <div class="feed-ico" style="background:rgba(232,192,74,.1);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">⏳</div>
+        <div class="notif-body"><strong>RwandaRide Approval Pending</strong><p>RwandaRide has submitted all required documents for company approval. 5 vehicles, 2 agents. Review required.</p></div>
+        <span class="notif-time">1 hr ago</span>
+      </div>
+      <div class="notif-item unread" data-type="user" onclick="openModal('notifDetail','Bob Nkusi Account Suspended','User','Bob Nkusi (bob@email.com) account was automatically suspended after 3 failed payment attempts. The user has 2 trips and has spent $120 total. Last login: 5 days ago. Manual review recommended.')">
+        <div class="notif-dot" style="background:var(--red)"></div>
+        <div class="feed-ico" style="background:rgba(216,90,48,.1);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">🚫</div>
+        <div class="notif-body"><strong>Bob Nkusi Account Suspended</strong><p>Account suspended after 3 failed payment attempts. Manual review recommended. Last active 5 days ago.</p></div>
+        <span class="notif-time">5 hr ago</span>
+      </div>
+      <div class="notif-item unread" data-type="booking" onclick="openModal('notifDetail','3 Support Tickets Open','Support','Three support tickets are currently open and awaiting response: #T001 - User cannot complete booking (2 days old), #T002 - Payment failed for Alice Mugisha (1 day old), #T003 - Car condition complaint from Eric Habimana (3 hrs old).')">
+        <div class="notif-dot" style="background:var(--blue)"></div>
+        <div class="feed-ico" style="background:rgba(59,95,212,.1);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">🎧</div>
+        <div class="notif-body"><strong>3 Support Tickets Open</strong><p>Tickets #T001, #T002, #T003 awaiting response. Oldest ticket is 2 days old. Please respond promptly.</p></div>
+        <span class="notif-time">3 hr ago</span>
+      </div>
+      <div class="notif-item" data-type="booking" onclick="openModal('notifDetail','Booking SW240005 Confirmed','Booking','Booking SW240005 has been confirmed for Fiona Ingabire. Vehicle: Mercedes GLE from LuxDrive. Duration: Jun 8 – Jun 10 (2 days). Total amount: $200. Payment method: Credit Card.')">
+        <div class="notif-dot" style="background:var(--surface)"></div>
+        <div class="feed-ico" style="background:rgba(29,158,117,.1);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">📋</div>
+        <div class="notif-body"><strong>Booking SW240005 Confirmed</strong><p>Fiona Ingabire · Mercedes GLE · LuxDrive · Jun 8–10 · $200</p></div>
+        <span class="notif-time">15 min ago</span>
+      </div>
+      <div class="notif-item" data-type="user" onclick="openModal('notifDetail','New User Registered','User','Alice Mugisha has completed registration on SwiftRide. Email: alice@email.com. Phone: +250 788 111 222. Joined: Mar 2024. Account status: Active. No action required.')">
+        <div class="notif-dot" style="background:var(--surface)"></div>
+        <div class="feed-ico" style="background:rgba(59,95,212,.1);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">👤</div>
+        <div class="notif-body"><strong>New User Registered</strong><p>Alice Mugisha joined SwiftRide · alice@email.com · +250 788 111 222</p></div>
+        <span class="notif-time">2 min ago</span>
+      </div>
+      <div class="notif-item" data-type="booking" onclick="openModal('notifDetail','Booking SW240004 Cancelled','Booking','Booking SW240004 was cancelled by Bob Nkusi. Vehicle: Toyota Camry from DriveKigali. Original dates: Mar 5 – Mar 7. Amount: $90. Reason given: Change of plans. Cancellation fee: $0 (cancelled more than 24hrs before pickup).')">
+        <div class="notif-dot" style="background:var(--surface)"></div>
+        <div class="feed-ico" style="background:rgba(216,90,48,.1);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">❌</div>
+        <div class="notif-body"><strong>Booking Cancelled</strong><p>SW240004 cancelled by Bob Nkusi · Toyota Camry · DriveKigali · $90</p></div>
+        <span class="notif-time">2 hr ago</span>
+      </div>
+      <div class="notif-item" data-type="company" onclick="openModal('notifDetail','5★ Review Posted','Review','Cameron One left a 5-star review for DriveKigali: \"Excellent service! Car was spotless and pickup was smooth. The team was very professional and helpful. Will definitely book again!\" This positive review brings DriveKigali\'s rating to 4.9★.')">
+        <div class="notif-dot" style="background:var(--surface)"></div>
+        <div class="feed-ico" style="background:var(--gold-dim);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">⭐</div>
+        <div class="notif-body"><strong>5★ Review for DriveKigali</strong><p>Cameron One: "Excellent service! Car was spotless and pickup was smooth." DriveKigali now rated 4.9★</p></div>
+        <span class="notif-time">3 hr ago</span>
+      </div>
+      <div class="notif-item" data-type="user" onclick="openModal('notifDetail','VanGo Company Suspended','Company','VanGo (KG 9 Ave, Gisozi) was suspended by a previous admin due to multiple customer complaints and vehicle condition issues. The company has 1 agent, 6 vehicles, 12 bookings, and $1,100 revenue. Rating: 3.9★. Review and determine if suspension should continue.')">
+        <div class="notif-dot" style="background:var(--surface)"></div>
+        <div class="feed-ico" style="background:rgba(216,90,48,.1);width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">🚫</div>
+        <div class="notif-body"><strong>VanGo Company Suspended</strong><p>VanGo suspended due to customer complaints. 3.9★ rating. Manual review recommended.</p></div>
+        <span class="notif-time">1 day ago</span>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- MODALS -->
+
+<!-- User Modal -->
+<div class="modal-ov" id="modal-user" onclick="if(event.target===this)closeModal('user')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="um-name">User Detail</h3>
+      <span class="modal-close" onclick="closeModal('user')">✕</span>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+        <div class="av" id="um-av" style="width:54px;height:54px;font-size:18px"></div>
+        <div><div id="um-email" style="color:var(--muted);font-size:13px"></div><div id="um-phone" style="color:var(--muted);font-size:12px;margin-top:2px"></div><div id="um-since" style="color:var(--muted);font-size:11px;margin-top:2px"></div></div>
+        <div style="margin-left:auto" id="um-status"></div>
+      </div>
+      <div class="modal-stat-row">
+        <div class="modal-stat"><strong id="um-trips">0</strong><small>Total Trips</small></div>
+        <div class="modal-stat"><strong id="um-spent" style="color:var(--gold)">$0</strong><small>Total Spent</small></div>
+        <div class="modal-stat"><strong id="um-avg">$0</strong><small>Avg per Trip</small></div>
+      </div>
+      <div style="background:var(--surface);border-radius:10px;padding:14px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:700;margin-bottom:10px;color:var(--muted)">BOOKING HISTORY</div>
+        <div id="um-bookings"></div>
+      </div>
+      <div class="modal-actions" id="um-actions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Company Modal -->
+<div class="modal-ov" id="modal-company" onclick="if(event.target===this)closeModal('company')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="cm-name">Company Detail</h3>
+      <span class="modal-close" onclick="closeModal('company')">✕</span>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+        <div class="av av-blue" id="cm-av" style="width:52px;height:52px;font-size:17px;border-radius:12px"></div>
+        <div><div id="cm-location" style="color:var(--muted);font-size:13px"></div><div id="cm-rating" style="color:var(--gold);font-size:13px;margin-top:2px"></div></div>
+        <div style="margin-left:auto" id="cm-status"></div>
+      </div>
+      <div class="modal-stat-row">
+        <div class="modal-stat"><strong id="cm-agents">0</strong><small>Agents</small></div>
+        <div class="modal-stat"><strong id="cm-cars">0</strong><small>Cars</small></div>
+        <div class="modal-stat"><strong id="cm-bookings">0</strong><small>Bookings</small></div>
+        <div class="modal-stat"><strong id="cm-revenue" style="color:var(--gold)">$0</strong><small>Revenue</small></div>
+      </div>
+      <div style="background:var(--surface);border-radius:10px;padding:14px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--muted)">PERFORMANCE</div>
+        <div id="cm-perf"></div>
+      </div>
+      <div class="modal-actions" id="cm-actions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Booking Modal -->
+<div class="modal-ov" id="modal-booking" onclick="if(event.target===this)closeModal('booking')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="bm-ref">Booking Detail</h3>
+      <span class="modal-close" onclick="closeModal('booking')">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="modal-stat-row" style="margin-bottom:16px">
+        <div class="modal-stat"><strong id="bm-amount" style="color:var(--gold)">$0</strong><small>Amount</small></div>
+        <div class="modal-stat"><strong id="bm-days">0</strong><small>Days</small></div>
+        <div id="bm-status-wrap" class="modal-stat"><small>Status</small></div>
+      </div>
+      <div style="background:var(--surface);border-radius:10px;padding:4px 0;margin-bottom:16px">
+        <div class="modal-row"><span class="lbl">👤 Customer</span><span class="val" id="bm-user">—</span></div>
+        <div class="modal-row"><span class="lbl">🚗 Vehicle</span><span class="val" id="bm-car">—</span></div>
+        <div class="modal-row"><span class="lbl">🏢 Company</span><span class="val" id="bm-company">—</span></div>
+        <div class="modal-row"><span class="lbl">📅 Pick-up</span><span class="val" id="bm-from">—</span></div>
+        <div class="modal-row"><span class="lbl">📅 Drop-off</span><span class="val" id="bm-to">—</span></div>
+        <div class="modal-row" style="border:none"><span class="lbl">💳 Payment</span><span class="val">Credit Card ···· 4242</span></div>
+      </div>
+      <div class="modal-actions" id="bm-actions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Activity Modal -->
+<div class="modal-ov" id="modal-activity" onclick="if(event.target===this)closeModal('activity')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="am-title">Activity Detail</h3>
+      <span class="modal-close" onclick="closeModal('activity')">✕</span>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px" id="am-sub"></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="am-time"></div>
+      <div style="background:var(--surface);border-radius:10px;padding:14px;font-size:13px;line-height:1.7;color:var(--text)" id="am-detail"></div>
+      <div class="modal-actions" style="margin-top:16px">
+        <button onclick="closeModal('activity')" style="background:var(--surface);color:var(--text);border:1px solid var(--border)">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Detail Modal -->
+<div class="modal-ov" id="modal-notifDetail" onclick="if(event.target===this)closeModal('notifDetail')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="nd-title">Notification</h3>
+      <span class="modal-close" onclick="closeModal('notifDetail')">✕</span>
+    </div>
+    <div class="modal-body">
+      <div style="display:inline-block;margin-bottom:12px" id="nd-cat"></div>
+      <div style="background:var(--surface);border-radius:10px;padding:14px;font-size:13px;line-height:1.7;color:var(--text);margin-bottom:16px" id="nd-detail"></div>
+      <div class="modal-actions">
+        <button onclick="closeModal('notifDetail');showToast('Notification dismissed','var(--muted)')" style="background:var(--surface);color:var(--text);border:1px solid var(--border)">Dismiss</button>
+        <button onclick="closeModal('notifDetail');showToast('Marked as read ✓','var(--green)')" style="background:var(--gold);color:#000">Mark as Read</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-ov" id="modal-addUser" onclick="if(event.target===this)closeModal('addUser')">
+  <div class="modal">
+    <div class="modal-head"><h3>Add New User</h3><span class="modal-close" onclick="closeModal('addUser')">✕</span></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>First Name</label><input placeholder="Cameron"/></div>
+        <div class="field"><label>Last Name</label><input placeholder="One"/></div>
+      </div>
+      <div class="field"><label>Email</label><input placeholder="user@email.com" type="email"/></div>
+      <div class="field"><label>Phone</label><input placeholder="+250 788 000 000"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Role</label><select><option>User</option><option>Super Admin</option></select></div>
+        <div class="field"><label>Status</label><select><option>Active</option><option>Inactive</option></select></div>
+      </div>
+      <div class="field"><label>Temporary Password</label><input placeholder="Min 8 characters" type="password"/></div>
+      <div class="modal-actions">
+        <button onclick="closeModal('addUser')" style="background:var(--surface);color:var(--text);border:1px solid var(--border)">Cancel</button>
+        <button onclick="closeModal('addUser');showToast('User created successfully ✓','var(--green)')" style="background:var(--gold);color:#000">Create User</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Company Modal -->
+<div class="modal-ov" id="modal-addCompany" onclick="if(event.target===this)closeModal('addCompany')">
+  <div class="modal">
+    <div class="modal-head"><h3>Add New Company</h3><span class="modal-close" onclick="closeModal('addCompany')">✕</span></div>
+    <div class="modal-body">
+      <div class="field"><label>Company Name</label><input placeholder="e.g. DriveKigali"/></div>
+      <div class="field"><label>Tagline</label><input placeholder="Short description"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Email</label><input placeholder="company@email.rw"/></div>
+        <div class="field"><label>Phone</label><input placeholder="+250 788 000 000"/></div>
+      </div>
+      <div class="field"><label>Location</label><input placeholder="KG 7 Ave, Kigali"/></div>
+      <div class="field"><label>Website</label><input placeholder="www.company.rw"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Brand Color</label><input type="color" value="#1D9E75" style="height:42px;padding:4px;cursor:pointer"/></div>
+        <div class="field"><label>Initial Status</label><select><option>Pending</option><option>Active</option></select></div>
+      </div>
+      <div class="modal-actions">
+        <button onclick="closeModal('addCompany')" style="background:var(--surface);color:var(--text);border:1px solid var(--border)">Cancel</button>
+        <button onclick="closeModal('addCompany');showToast('Company created successfully ✓','var(--green)')" style="background:var(--gold);color:#000">Create Company</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Modal -->
+<div class="modal-ov" id="modal-profile" onclick="if(event.target===this)closeModal('profile')">
+  <div class="modal">
+    <div class="modal-head"><h3>Admin Profile</h3><span class="modal-close" onclick="closeModal('profile')">✕</span></div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
+        <div class="av av-gold" style="width:60px;height:60px;font-size:22px">SA</div>
+        <div><strong style="font-size:16px">Super Admin</strong><div style="color:var(--muted);font-size:13px">admin@swiftride.rw</div><div style="margin-top:4px"><span class="badge b-gold">SUPER ADMIN</span></div></div>
+      </div>
+      <div class="modal-stat-row">
+        <div class="modal-stat"><strong>6</strong><small>Users Managed</small></div>
+        <div class="modal-stat"><strong>5</strong><small>Companies</small></div>
+        <div class="modal-stat"><strong>Jan 2024</strong><small>Admin Since</small></div>
+      </div>
+      <div class="field" style="margin-top:16px"><label>Display Name</label><input value="Super Admin"/></div>
+      <div class="field"><label>Email</label><input value="admin@swiftride.rw"/></div>
+      <div class="field"><label>New Password</label><input type="password" placeholder="Leave blank to keep current"/></div>
+      <div class="modal-actions">
+        <button onclick="closeModal('profile')" style="background:var(--surface);color:var(--text);border:1px solid var(--border)">Cancel</button>
+        <button onclick="closeModal('profile');showToast('Profile updated ✓','var(--green)')" style="background:var(--gold);color:#000">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toast-ico">✓</span>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+// TAB NAVIGATION
+function showTab(id, el) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('tab-' + id);
+  if (panel) panel.classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'analytics') buildCharts();
+}
+
+// MODALS
+function openModal(id, ...args) {
+  document.getElementById('modal-' + id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById('modal-' + id).classList.remove('open');
+}
+
+// USER MODAL
+const userColors = {
+  'Cameron One':'av-gold','Alice Mugisha':'av-blue','Bob Nkusi':'av-red',
+  'Diana Uwase':'av-purple','Eric Habimana':'av-grey','Fiona Ingabire':'av-green'
+};
+const userBookings = {
+  'Cameron One':[{ref:'SW240001',car:'Toyota RAV4',co:'DriveKigali',amt:135,st:'Active'}],
+  'Alice Mugisha':[{ref:'SW240003',car:'Range Rover',co:'LuxDrive',amt:220,st:'Completed'}],
+  'Bob Nkusi':[{ref:'SW240004',car:'Toyota Camry',co:'DriveKigali',amt:90,st:'Cancelled'}],
+  'Diana Uwase':[{ref:'SW240002',car:'BMW 5 Series',co:'SafariWheels',amt:180,st:'Upcoming'}],
+  'Eric Habimana':[{ref:'SW240006',car:'Honda CR-V',co:'RwandaRide',amt:76,st:'Completed'}],
+  'Fiona Ingabire':[{ref:'SW240005',car:'Mercedes GLE',co:'LuxDrive',amt:200,st:'Active'}],
+};
+const stCls = {Active:'b-green',Upcoming:'b-blue',Completed:'b-grey',Cancelled:'b-red',Suspended:'b-red',Inactive:'b-grey'};
+
+function openUserModal(name, email, phone, status, trips, spent, since) {
+  const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2);
+  const clr = userColors[name] || 'av-grey';
+  document.getElementById('um-name').textContent = name;
+  document.getElementById('um-av').className = 'av ' + clr;
+  document.getElementById('um-av').style.cssText = 'width:54px;height:54px;font-size:18px';
+  document.getElementById('um-av').textContent = initials;
+  document.getElementById('um-email').textContent = '✉ ' + email;
+  document.getElementById('um-phone').textContent = '📞 ' + phone;
+  document.getElementById('um-since').textContent = '📅 Member since ' + since;
+  document.getElementById('um-status').innerHTML = `<span class="badge ${stCls[status]||'b-grey'}">${status}</span>`;
+  document.getElementById('um-trips').textContent = trips;
+  document.getElementById('um-spent').textContent = '$' + spent.toLocaleString();
+  document.getElementById('um-avg').textContent = trips > 0 ? '$' + Math.round(spent/trips) : '$0';
+  const bks = userBookings[name] || [];
+  document.getElementById('um-bookings').innerHTML = bks.length ? bks.map(b =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--gold);font-weight:700;font-size:12px">${b.ref}</span>
+      <span style="font-size:12px;flex:1">${b.car} · ${b.co}</span>
+      <span style="color:var(--gold);font-size:12px">$${b.amt}</span>
+      <span class="badge ${stCls[b.st]||'b-grey'}" style="font-size:9px">${b.st}</span>
+    </div>`).join('') : '<div style="color:var(--muted);font-size:12px">No bookings yet</div>';
+  const isSuspended = status === 'Suspended';
+  const isInactive  = status === 'Inactive';
+  document.getElementById('um-actions').innerHTML = `
+    <button onclick="closeModal('user');showToast('Email sent to ${name} ✓','var(--blue)')" style="background:rgba(59,95,212,.15);color:var(--blue);border:1px solid rgba(59,95,212,.3)">✉ Send Email</button>
+    ${isSuspended ? `<button onclick="closeModal('user');showToast('${name} unsuspended ✓','var(--green)')" style="background:rgba(29,158,117,.15);color:var(--green);border:1px solid rgba(29,158,117,.3)">✓ Unsuspend</button>`
+    : isInactive  ? `<button onclick="closeModal('user');showToast('${name} activated ✓','var(--green)')" style="background:rgba(29,158,117,.15);color:var(--green);border:1px solid rgba(29,158,117,.3)">✓ Activate</button>`
+    : `<button onclick="closeModal('user');showToast('${name} suspended','var(--red)')" style="background:rgba(216,90,48,.15);color:var(--red);border:1px solid rgba(216,90,48,.3)">🚫 Suspend</button>`}
+    <button onclick="closeModal('user');showToast('Password reset link sent ✓','var(--gold)')" style="background:rgba(127,119,221,.15);color:var(--purple);border:1px solid rgba(127,119,221,.3)">🔑 Reset Password</button>
+    <button onclick="closeModal('user');showToast('${name} deleted','var(--red)')" style="background:rgba(216,90,48,.15);color:var(--red);border:1px solid rgba(216,90,48,.3)">🗑 Delete</button>`;
+  openModal('user');
+}
+
+// COMPANY MODAL
+function openCompanyModal(name, location, agents, cars, bookings, revenue, status, rating) {
+  const initials = name.slice(0,2).toUpperCase();
+  document.getElementById('cm-name').textContent = name;
+  document.getElementById('cm-av').textContent = initials;
+  document.getElementById('cm-location').textContent = '📍 ' + location;
+  document.getElementById('cm-rating').textContent = '★ ' + rating + ' rating';
+  document.getElementById('cm-status').innerHTML = `<span class="badge ${stCls[status]||'b-grey'}">${status}</span>`;
+  document.getElementById('cm-agents').textContent = agents;
+  document.getElementById('cm-cars').textContent = cars;
+  document.getElementById('cm-bookings').textContent = bookings;
+  document.getElementById('cm-revenue').textContent = '$' + revenue.toLocaleString();
+  const maxRev = 18200;
+  document.getElementById('cm-perf').innerHTML = `
+    <div class="prog-wrap"><div class="prog-header"><span style="font-size:12px">Revenue Share</span><span style="font-size:12px;color:var(--gold)">$${revenue.toLocaleString()}</span></div><div class="prog-track"><div class="prog-fill" style="width:${Math.round(revenue/maxRev*100)}%;background:var(--blue)"></div></div></div>
+    <div class="prog-wrap" style="margin-top:8px"><div class="prog-header"><span style="font-size:12px">Booking Volume</span><span style="font-size:12px;color:var(--gold)">${bookings}</span></div><div class="prog-track"><div class="prog-fill" style="width:${Math.round(bookings/156*100)}%;background:var(--green)"></div></div></div>
+    <div class="prog-wrap" style="margin-top:8px"><div class="prog-header"><span style="font-size:12px">Rating</span><span style="font-size:12px;color:var(--gold)">${rating}★</span></div><div class="prog-track"><div class="prog-fill" style="width:${Math.round(rating/5*100)}%;background:var(--gold)"></div></div></div>`;
+  const isPending   = status === 'Pending';
+  const isSuspended = status === 'Suspended';
+  document.getElementById('cm-actions').innerHTML = `
+    ${isPending ? `<button onclick="closeModal('company');showToast('${name} approved ✓','var(--green)')" style="background:rgba(29,158,117,.15);color:var(--green);border:1px solid rgba(29,158,117,.3)">✓ Approve</button>
+    <button onclick="closeModal('company');showToast('${name} rejected','var(--red)')" style="background:rgba(216,90,48,.15);color:var(--red);border:1px solid rgba(216,90,48,.3)">✗ Reject</button>` : ''}
+    ${isSuspended ? `<button onclick="closeModal('company');showToast('${name} unsuspended ✓','var(--green)')" style="background:rgba(29,158,117,.15);color:var(--green);border:1px solid rgba(29,158,114,.3)">✓ Unsuspend</button>`
+    : !isPending ? `<button onclick="closeModal('company');showToast('${name} suspended','var(--red)')" style="background:rgba(216,90,48,.15);color:var(--red);border:1px solid rgba(216,90,48,.3)">🚫 Suspend</button>` : ''}
+    <button onclick="closeModal('company');showToast('Email sent to ${name} ✓','var(--blue)')" style="background:rgba(59,95,212,.15);color:var(--blue);border:1px solid rgba(59,95,212,.3)">✉ Contact</button>
+    <button onclick="closeModal('company')" style="background:var(--surface);color:var(--text);border:1px solid var(--border)">Close</button>`;
+  openModal('company');
+}
+
+// BOOKING MODAL
+const bkData = {
+  SW240001:{user:'Cameron One',car:'Toyota RAV4',co:'DriveKigali',from:'May 24',to:'May 27',days:3,amt:135,st:'Active'},
+  SW240002:{user:'Diana Uwase',car:'BMW 5 Series',co:'SafariWheels',from:'Jun 1',to:'Jun 3',days:2,amt:180,st:'Upcoming'},
+  SW240003:{user:'Alice Mugisha',car:'Range Rover',co:'LuxDrive',from:'Apr 10',to:'Apr 12',days:2,amt:220,st:'Completed'},
+  SW240004:{user:'Bob Nkusi',car:'Toyota Camry',co:'DriveKigali',from:'Mar 5',to:'Mar 7',days:2,amt:90,st:'Cancelled'},
+  SW240005:{user:'Fiona Ingabire',car:'Mercedes GLE',co:'LuxDrive',from:'Jun 8',to:'Jun 10',days:2,amt:200,st:'Active'},
+  SW240006:{user:'Eric Habimana',car:'Honda CR-V',co:'RwandaRide',from:'May 1',to:'May 3',days:2,amt:76,st:'Completed'},
+};
+function openBookingModal(ref, user, car, co, from, to, amt, status) {
+  document.getElementById('bm-ref').textContent = 'Booking ' + ref;
+  document.getElementById('bm-amount').textContent = '$' + amt;
+  document.getElementById('bm-days').textContent = bkData[ref]?.days || '—';
+  document.getElementById('bm-status-wrap').innerHTML = `<span class="badge ${stCls[status]||'b-grey'}" style="font-size:12px">${status}</span><small style="display:block;color:var(--muted);margin-top:4px">Status</small>`;
+  document.getElementById('bm-user').textContent = user;
+  document.getElementById('bm-car').textContent = car;
+  document.getElementById('bm-company').textContent = co;
+  document.getElementById('bm-from').textContent = from;
+  document.getElementById('bm-to').textContent = to;
+  const isUpcoming = status === 'Upcoming';
+  const isActive   = status === 'Active';
+  document.getElementById('bm-actions').innerHTML = `
+    ${isUpcoming ? `<button onclick="closeModal('booking');showToast('Booking ${ref} cancelled','var(--red)')" style="background:rgba(216,90,48,.15);color:var(--red);border:1px solid rgba(216,90,48,.3)">✗ Cancel</button>
+    <button onclick="closeModal('booking');showToast('Booking ${ref} confirmed ✓','var(--green)')" style="background:rgba(29,158,117,.15);color:var(--green);border:1px solid rgba(29,158,117,.3)">✓ Confirm</button>` : ''}
+    ${isActive ? `<button onclick="closeModal('booking');showToast('QR Pass sent to customer ✓','var(--blue)')" style="background:rgba(59,95,212,.15);color:var(--blue);border:1px solid rgba(59,95,212,.3)">📱 Send QR Pass</button>` : ''}
+    <button onclick="closeModal('booking')" style="background:var(--surface);color:var(--text);border:1px solid var(--border)">Close</button>`;
+  openModal('booking');
+}
+
+// ACTIVITY MODAL
+function openModal(id, title, sub, time, detail, type) {
+  if (id === 'activity') {
+    document.getElementById('am-title').textContent = title;
+    document.getElementById('am-sub').textContent = sub;
+    document.getElementById('am-time').textContent = '🕐 ' + time;
+    document.getElementById('am-detail').textContent = detail;
+  } else if (id === 'notifDetail') {
+    document.getElementById('nd-title').textContent = title;
+    document.getElementById('nd-cat').innerHTML = `<span class="badge b-blue">${sub}</span>`;
+    document.getElementById('nd-detail').textContent = detail;
+  }
+  document.getElementById('modal-' + id).classList.add('open');
+}
+
+// FILTERS
+function filterBookings() {
+  const val = document.getElementById('statusFilter').value;
+  document.querySelectorAll('#bookings-body tr').forEach(tr => {
+    tr.style.display = (val === 'All Status' || tr.dataset.status === val) ? '' : 'none';
+  });
+}
+
+function filterNotifs(type, el) {
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.notif-item').forEach(n => {
+    if (type === 'all') n.style.display = '';
+    else if (type === 'unread') n.style.display = n.classList.contains('unread') ? '' : 'none';
+    else n.style.display = n.dataset.type === type ? '' : 'none';
+  });
+}
+
+function switchPeriod(el, period) {
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  buildCharts(period);
+}
+
+// SEARCH
+function globalSearch(q) {
+  if (!q) return;
+}
+
+// TOAST
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  const ico = color.includes('green') ? '✓' : color.includes('red') ? '✗' : 'ℹ';
+  document.getElementById('toast-ico').textContent = ico;
+  document.getElementById('toast-ico').style.color = color.replace('var(','').replace(')','');
+  document.getElementById('toast-msg').textContent = msg;
+  t.style.borderColor = 'var(--border)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// CHARTS
+function buildCharts(period) {
+  const datasets7d  = [40,55,32,70,61,48,90];
+  const datasets30d = [120,180,95,210,160,145,200,175,220,190,250,210,180,165,230,195,270,220,185,240,260,215,280,195,310,245,200,265,290,240];
+  const datasets90d = [800,950,1100,1250,1400,1600,1800,2000,2200];
+  const labels7d    = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const labels30d   = Array.from({length:30},(_,i)=>'D'+(i+1));
+  const labels90d   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'];
+  const users7d  = [0,1,0,0,1,0,1];
+  const users30d = [0,1,0,2,1,0,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,1];
+  const users90d = [2,3,1,4,2,3,2,1,3];
+
+  const p = period || '7d';
+  const revData  = p==='7d'?datasets7d:p==='30d'?datasets30d:datasets90d;
+  const revLbls  = p==='7d'?labels7d:p==='30d'?labels30d:labels90d;
+  const uData    = p==='7d'?users7d:p==='30d'?users30d:users90d;
+  const uLbls    = revLbls;
+  const maxR = Math.max(...revData);
+  const maxU = Math.max(...uData) || 1;
+
+  const rc = document.getElementById('revenue-chart');
+  const rl = document.getElementById('revenue-labels');
+  if (rc) {
+    rc.innerHTML = revData.map((v,i)=>`
+      <div class="bar-col">
+        <div class="bar" style="height:${Math.round(v/maxR*120)}px;background:linear-gradient(to top,var(--blue),var(--purple));position:relative" title="$${v}">
+          <span class="bar-val">$${v}</span>
+        </div>
+      </div>`).join('');
+    rl.innerHTML = revLbls.map(l=>`<span>${l}</span>`).join('');
+  }
+  const uc = document.getElementById('user-chart');
+  const ul = document.getElementById('user-labels');
+  if (uc) {
+    uc.innerHTML = uData.map((v,i)=>`
+      <div class="bar-col">
+        <div class="bar" style="height:${Math.round(v/maxU*100)}px;background:var(--green);position:relative" title="${v} users">
+          ${v>0?`<span class="bar-val">${v}</span>`:''}
+        </div>
+      </div>`).join('');
+    ul.innerHTML = uLbls.map(l=>`<span>${l}</span>`).join('');
+  }
+}
+
+// TOGGLES
+document.querySelectorAll('.toggle').forEach(t => {
+  t.addEventListener('click', function() { this.classList.toggle('on'); });
+});
+
+// Init charts on load if analytics is visible
+window.addEventListener('load', () => {
+  if (document.getElementById('tab-analytics').classList.contains('active')) buildCharts();
+});
+</script>
+</body>
+</html>
